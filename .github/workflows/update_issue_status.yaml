@@ -8,14 +8,14 @@ jobs:
   automate-project-columns:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ github.event.issue_comment.comment.body }}
-      - if: github.event.issue_comment.comment.body == '👀レビュー中に移動します'
+      - run: echo ${{ github.event.comment.body }}
+      - if: github.event.issue_comment.comment.body == 👀レビュー中に移動します
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
           project: GItHubActionsPracticeProject
           column: 👀レビュー中
           repo-token: ${{ secrets.PAT }}
-      - if: github.event.issue_comment.comment.body == '⌨️開発中に移動します'
+      - if: github.event.comment.body == ⌨️開発中に移動します
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
           project: GItHubActionsPracticeProject
