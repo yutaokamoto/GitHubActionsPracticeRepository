@@ -12,12 +12,12 @@ jobs:
       - if: github.event.comment.body == '👀レビュー中に移動します'
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
-          project: GItHubActionsPracticeProject
+          project: GitHubActionsPracticeProject
           column: 👀レビュー中
           repo-token: ${{ secrets.PAT }}
       - if: github.event.comment.body == '⌨️開発中に移動します'
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
-          project: GItHubActionsPracticeProject
+          project: GitHubActionsPracticeProject
           column: ⌨️開発中
           repo-token: ${{ secrets.PAT }}
