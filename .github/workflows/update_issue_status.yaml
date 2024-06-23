@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ${{ github.event.comment.body }}
-      - if: github.event.issue_comment.comment.body == '👀レビュー中に移動します'
+      - if: github.event.comment.body == '👀レビュー中に移動します'
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
           project: GItHubActionsPracticeProject
