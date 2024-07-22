@@ -12,7 +12,7 @@ jobs:
       - name: Get project data
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-          USER: yutaokamoto1997
+          USER: yutaokamoto
           PROJECT_NUMBER: 1
         run: |
           gh api graphql -f query='
