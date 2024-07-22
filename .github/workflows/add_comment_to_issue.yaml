@@ -11,10 +11,12 @@ jobs:
       issues: read
       pull-requests: write
     outputs:
-      linked-issues: ${{steps.get.outputs.linked-issues}}
+      linked-issues: ${{steps.set.outputs.linked-issues}}
+    if: github.event.pull_request.body != ''
     steps:
       - name: check linked issues
         id: check
+        continue-on-error: true
         uses: nearform-actions/github-action-check-linked-issues@v1
         with:
           exclude-branches: "release/**, dependabot/**"
@@ -22,10 +24,20 @@ jobs:
           loose-matching: true
       - name: get outputs
         id: get
+        if: steps.check.outcome == 'success'
         run: |
           echo '${{ steps.check.outputs.issues }}' | jq -c '[.[] | split("#")[1]]'
           linked_issues=$(echo '${{ steps.check.outputs.issues }}' | jq -c '[.[] | split("#")[1]]')
           echo $linked_issues
+          echo "LINKED_ISSUES=${linked_issues}" >> $GITHUB_ENV
+      - name: set outputs to variable
+        id: set
+        run: |
+          if [ ${{ steps.check.outcome }} = success ]; then
+            linked_issues=$LINKED_ISSUES
+          else
+            linked_issues=[]
+          fi
           echo "linked-issues=${linked_issues}" >> $GITHUB_OUTPUT
 
   add-comment:
@@ -36,20 +48,26 @@ jobs:
     strategy:
       matrix:
         linked-issue: ${{ fromJSON(needs.fetch-linked-issues.outputs.linked-issues) }}
+    if: needs.fetch-linked-issues.outputs.linked-issues != '[]'
     steps:
+      - run: |
+          echo ${{ needs.fetch-linked-issues.outputs.linked-issues }}
+          echo ${{ fromJSON(needs.fetch-linked-issues.outputs.linked-issues) }}
       - if: |
-          (github.event.pull_request.action == 'opened' && github.event.pull_request.draft == false)
-          || ${{ github.event.pull_request.action == 'reopened' }}
-          || github.event.pull_request.action == 'ready_for_review'
+          (github.event.action == 'opened' && github.event.pull_request.draft == false)
+          || github.event.action == 'reopened'
+          || github.event.action == 'ready_for_review'
         name: create message when pr is created
         run: |
+           echo ${{ github.event.action == 'reopened' }}
            echo "message=👀レビュー中に移動します" >> $GITHUB_ENV
       - if: |
-          (github.event.pull_request.action == 'opened' && github.event.pull_request.draft == true)
-          || github.event.pull_request.action == 'converted_to_draft'
+          (github.event.action == 'opened' && github.event.pull_request.draft == true)
+          || github.event.action == 'converted_to_draft'
         name: create message when draft pr is created
         run: |
-           echo "message=⌨️開発中に移動します" >> $GITHUB_ENV
+           echo ${{ (github.event.action == 'opened' && github.event.pull_request.draft == true) || github.event.action == 'converted_to_draft' }}
+           echo "message=⌨開発中に移動します" >> $GITHUB_ENV
       - run: echo ${{ env.message }}
       - name: add comment
         run: gh issue comment "$NUMBER" --body "$BODY"
